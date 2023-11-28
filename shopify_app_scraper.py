@@ -5,8 +5,8 @@ import configparser
 import argparse
 import os
 
-parser = argparse.ArgumentParser(description='Description of your program')
-parser.add_argument("-t", "--throttle", type=int, default=2, help="Throttle time bettween HTTP requests")
+parser = argparse.ArgumentParser(description='Shopify app marketplace scraper')
+parser.add_argument("-t", "--throttle", type=int, default=2, help="Throttle time (in seconds) bettween HTTP requests")
 parser.add_argument("-v", "--verbose", default=False, action=argparse.BooleanOptionalAction, help="Verbose error output")
 parser.add_argument("-tm", "--test-mode-on", default=False, action=argparse.BooleanOptionalAction, help="Only scrape maximum 2 pages per star review")
 parser.add_argument("-or", "--omit-reviews", default=False, action=argparse.BooleanOptionalAction, help="Don't scrape app reviews")
