@@ -10,6 +10,7 @@ parser.add_argument("-t", "--throttle", type=int, default=2, help="Throttle time
 parser.add_argument("-v", "--verbose", default=False, action=argparse.BooleanOptionalAction, help="Verbose error output")
 parser.add_argument("-tm", "--test-mode-on", default=False, action=argparse.BooleanOptionalAction, help="Only scrape maximum 2 pages per star review")
 parser.add_argument("-or", "--omit-reviews", default=False, action=argparse.BooleanOptionalAction, help="Don't scrape app reviews")
+parser.add_argument("-r", "--reset", default=False, action=argparse.BooleanOptionalAction, help="Reset scraper...delete log, config, and db files")
 args = parser.parse_args()
 
 OUTPUT_DIR = "output"
@@ -62,11 +63,11 @@ def log(appUrl, errors):
 
 def throttle(index):
 	if (index+1) % 500 == 0:
-		sleep(60 * 5)
+		sleep(args.throttle * 60 * 5)
 	elif (index+1) % 100 == 0:
-		sleep(60)
+		sleep(args.throttle * 30)
 	else:
-		sleep(3)
+		sleep(args.throttle)
 
 def printReport(totalAppUrls, numberOfAppsWithErrors, numberOfTotalErrors):
 	print("\n\n[+] Scraper Reports:")
@@ -125,5 +126,7 @@ def main():
 	printReport(totalAppUrlCount, numberOfAppsWithErrors, numberOfTotalErrors)
 
 if __name__ == "__main__":
-	# reInitialize()
-	main()
+	if args.reset:
+		reInitialize()
+	else:
+		main()

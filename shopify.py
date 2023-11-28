@@ -24,7 +24,7 @@ def printProgressBar(iteration, total, prefix='Progress:', suffix='Complete', de
 	
 	stdout.write(f'\r{prefix} |{bar}| {percent}% {suffix}')
 	stdout.flush()
-	sleep(0.1)
+	sleep(0.05)
 
 def flushProgressBar():
 	print("\r" + " " * 100 + "\r", end='')
