@@ -5,6 +5,13 @@ import configparser
 import argparse
 import os
 
+parser = argparse.ArgumentParser(description='Description of your program')
+parser.add_argument("-t", "--throttle", type=int, default=2, help="Throttle time bettween HTTP requests")
+parser.add_argument("-v", "--verbose", default=False, action=argparse.BooleanOptionalAction, help="Verbose error output")
+parser.add_argument("-tm", "--test-mode-on", default=False, action=argparse.BooleanOptionalAction, help="Only scrape maximum 2 pages per star review")
+parser.add_argument("-or", "--omit-reviews", default=False, action=argparse.BooleanOptionalAction, help="Don't scrape app reviews")
+args = parser.parse_args()
+
 OUTPUT_DIR = "output"
 LOG_DIR = "log"
 CONFIG_DIR = "config"
@@ -85,30 +92,6 @@ def reInitialize():
 		os.remove(DB_FILE)
 		print("deleted " + DB_FILE)
 
-def getArgs():
-	parser = argparse.ArgumentParser(description='Description of your program')
-	parser.add_argument("-t", "--throttle", type=int, help="Throttle time bettween HTTP requests")
-	parser.add_argument("-v", "--verbose", action=argparse.BooleanOptionalAction, help="Verbose error output")
-	parser.add_argument("-tm", "--test-mode-on", action=argparse.BooleanOptionalAction, help="Only scrape maximum 2 pages per star review")
-	parser.add_argument("-or", "--omit-reviews", action=argparse.BooleanOptionalAction, help="Don't scrape app reviews")
-	args = parser.parse_args()
-
-	throttle = 2
-	verbose = False
-	testModeOn = False
-	omitReviews = False
-
-	if args.throttle:
-		throttle = args.throttle
-	if args.verbose:
-		verbose = args.verbose
-	if args.test_mode_on:
-		testModeOn = args.test_mode_on
-	if args.omit_reviews:
-		omitReviews = args.omit_reviews
-
-	return throttle, verbose, testModeOn, omitReviews
-
 def getRemainingAppUrls():
 	lastSearchedIdx = getLastIndexProperty()
 	appUrls = appUrls[lastSearchedIdx:]
@@ -117,22 +100,21 @@ def getRemainingAppUrls():
 def main():
 	loadAppUrls()
 	totalAppUrls = len(appUrls)
-	appUrls = getRemainingAppUrls()
-	throttle, verbose, testModeOn, omitReviews = getArgs()
+	remainingAppUrls = getRemainingAppUrls()
 
 	numberOfAppsWithErrors = 0
 	numberOfTotalErrors = 0
-	
-	for index, appUrl in enumerate(appUrls):
+
+	for index, appUrl in enumerate(remainingAppUrls):
 		app = ShopifyApp(appUrl,
-			throttle=throttle,
-			verbose=verbose,
-			testModeOn=testModeOn,
-			omitReviews=omitReviews
+			throttle=args.throttle,
+			verbose=args.verbose,
+			testModeOn=args.test_mode_on,
+			omitReviews=args.omit_reviews
 		)
 		db.insert(app.getData())
 		print("[{}/{}] Scraped {}"
-			.format(index + (totalAppUrls - len(appUrls)) + 1, totalAppUrls, appUrl))
+			.format(index + (totalAppUrls - len(remainingAppUrls)) + 1, totalAppUrls, appUrl))
 		
 		if len(app.errors) > 0:
 			log(appUrl, app.errors)
