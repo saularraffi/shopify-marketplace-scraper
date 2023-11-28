@@ -92,15 +92,11 @@ def reInitialize():
 		os.remove(DB_FILE)
 		print("deleted " + DB_FILE)
 
-def getRemainingAppUrls():
-	lastSearchedIdx = getLastIndexProperty()
-	appUrls = appUrls[lastSearchedIdx:]
-	return appUrls
-
 def main():
 	loadAppUrls()
-	totalAppUrls = len(appUrls)
-	remainingAppUrls = getRemainingAppUrls()
+	totalAppUrlCount = len(appUrls)
+	lastSearchedIdx = getLastIndexProperty()
+	remainingAppUrls = appUrls[lastSearchedIdx:]
 
 	numberOfAppsWithErrors = 0
 	numberOfTotalErrors = 0
@@ -114,7 +110,7 @@ def main():
 		)
 		db.insert(app.getData())
 		print("[{}/{}] Scraped {}"
-			.format(index + (totalAppUrls - len(remainingAppUrls)) + 1, totalAppUrls, appUrl))
+			.format(index + (totalAppUrlCount - len(remainingAppUrls)) + 1, totalAppUrlCount, appUrl))
 		
 		if len(app.errors) > 0:
 			log(appUrl, app.errors)
@@ -126,7 +122,7 @@ def main():
 		throttle(index)
 
 	initializePropertyFile()
-	printReport(totalAppUrls, numberOfAppsWithErrors, numberOfTotalErrors)
+	printReport(totalAppUrlCount, numberOfAppsWithErrors, numberOfTotalErrors)
 
 if __name__ == "__main__":
 	# reInitialize()
