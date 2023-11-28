@@ -104,7 +104,7 @@ class ShopifyApp:
 			'pricePlans': self.pricePlans,
 			'reviews': self.reviews
 		}
-		return data
+		return data		
 
 	def getDataReadable(self):
 		data = self.getData()
@@ -118,6 +118,8 @@ class ShopifyApp:
 
 	def fetchHtmlAndLoadSoup(self):
 		fetchError = False
+		errorMessage = "Failed to fetch HTML"
+
 		try:
 			response = requests.get(self.url)
 			if response.status_code == 200:
@@ -125,12 +127,13 @@ class ShopifyApp:
 				self.soup = BeautifulSoup(html, "html.parser")
 			else:
 				fetchError = True
+				errorMessage += " ({})".format(response.status_code)
 		except Exception as e:
-			if self.options.verbose: print("Failed to fetch HTML\n", e)
+			if self.options.verbose: print(errorMessage, "\n", e)
 			fetchError = True
 		finally:
 			if fetchError:
-				self.logError("Failed to fetch HTML")
+				self.logError(errorMessage)
 
 	def scrapeTitle(self):
 		try:
