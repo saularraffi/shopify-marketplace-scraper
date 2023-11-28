@@ -2,6 +2,7 @@ from shopify import ShopifyApp
 from tinydb import TinyDB, Query
 from time import sleep
 import configparser
+import argparse
 import os
 
 OUTPUT_DIR = "output"
@@ -84,10 +85,35 @@ def reInitialize():
 		os.remove(DB_FILE)
 		print("deleted " + DB_FILE)
 
+def getArgs():
+	parser = argparse.ArgumentParser(description='Description of your program')
+	parser.add_argument("-t", "--throttle", type=int, help="Throttle time bettween HTTP requests")
+	parser.add_argument("-v", "--verbose", action=argparse.BooleanOptionalAction, help="Verbose error output")
+	parser.add_argument("-tm", "--test-mode-on", action=argparse.BooleanOptionalAction, help="Only scrape maximum 2 pages per star review")
+	parser.add_argument("-or", "--omit-reviews", action=argparse.BooleanOptionalAction, help="Don't scrape app reviews")
+	args = parser.parse_args()
+
+	throttle = 2
+	verbose = False
+	testModeOn = False
+	omitReviews = False
+
+	if args.throttle:
+		throttle = args.throttle
+	if args.verbose:
+		verbose = args.verbose
+	if args.test_mode_on:
+		testModeOn = args.test_mode_on
+	if args.omit_reviews:
+		omitReviews = args.omit_reviews
+
+	return throttle, verbose, testModeOn, omitReviews
+
 def main():
 	global appUrls
 	loadAppUrls()
 
+	throttle, verbose, testModeOn, omitReviews = getArgs()
 	totalUrls = len(appUrls)
 	lastSearchedIdx = getLastIndexProperty()
 	appUrls = appUrls[lastSearchedIdx:]
@@ -95,7 +121,7 @@ def main():
 	numberOfAppsWithErrors = 0
 	numberOfTotalErrors = 0
 	for index, appUrl in enumerate(appUrls):
-		app = ShopifyApp(appUrl, throttle=2, testModeOn=True)
+		app = ShopifyApp(appUrl, throttle=throttle, verbose=verbose, testModeOn=testModeOn, omitReviews=omitReviews)
 		db.insert(app.getData())
 		print("[{}/{}] Scraped {}".format(index + (totalUrls - len(appUrls)) + 1, totalUrls, appUrl))
 		
