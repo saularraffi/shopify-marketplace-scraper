@@ -61,10 +61,10 @@ def throttle(index):
 	else:
 		sleep(3)
 
-def printReport(totalUrls, numberOfAppsWithErrors, numberOfTotalErrors):
+def printReport(totalAppUrls, numberOfAppsWithErrors, numberOfTotalErrors):
 	print("\n\n[+] Scraper Reports:")
 	print("-------------------------------------")
-	print("[+] {} apps scraped".format(totalUrls))
+	print("[+] {} apps scraped".format(totalAppUrls))
 	if numberOfTotalErrors == 0:
 		print("[+] 0 Errors")
 	else:
@@ -109,21 +109,30 @@ def getArgs():
 
 	return throttle, verbose, testModeOn, omitReviews
 
-def main():
-	global appUrls
-	loadAppUrls()
-
-	throttle, verbose, testModeOn, omitReviews = getArgs()
-	totalUrls = len(appUrls)
+def getRemainingAppUrls():
 	lastSearchedIdx = getLastIndexProperty()
 	appUrls = appUrls[lastSearchedIdx:]
+	return appUrls
+
+def main():
+	loadAppUrls()
+	totalAppUrls = len(appUrls)
+	appUrls = getRemainingAppUrls()
+	throttle, verbose, testModeOn, omitReviews = getArgs()
 
 	numberOfAppsWithErrors = 0
 	numberOfTotalErrors = 0
+	
 	for index, appUrl in enumerate(appUrls):
-		app = ShopifyApp(appUrl, throttle=throttle, verbose=verbose, testModeOn=testModeOn, omitReviews=omitReviews)
+		app = ShopifyApp(appUrl,
+			throttle=throttle,
+			verbose=verbose,
+			testModeOn=testModeOn,
+			omitReviews=omitReviews
+		)
 		db.insert(app.getData())
-		print("[{}/{}] Scraped {}".format(index + (totalUrls - len(appUrls)) + 1, totalUrls, appUrl))
+		print("[{}/{}] Scraped {}"
+			.format(index + (totalAppUrls - len(appUrls)) + 1, totalAppUrls, appUrl))
 		
 		if len(app.errors) > 0:
 			log(appUrl, app.errors)
@@ -135,7 +144,7 @@ def main():
 		throttle(index)
 
 	initializePropertyFile()
-	printReport(totalUrls, numberOfAppsWithErrors, numberOfTotalErrors)
+	printReport(totalAppUrls, numberOfAppsWithErrors, numberOfTotalErrors)
 
 if __name__ == "__main__":
 	# reInitialize()
